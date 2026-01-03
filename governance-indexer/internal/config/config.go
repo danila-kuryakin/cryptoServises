@@ -13,16 +13,22 @@ import (
 type Config struct {
 	Server   ServerConfig
 	Database DatabaseConfig
+	Proposal Proposal
 }
 
 type ServerConfig struct {
-	Address string `yaml:"address"`
+	Port string `yaml:"port"`
 }
 type DatabaseConfig struct {
 	Host    string `yaml:"host"`
 	Port    int    `yaml:"port"`
 	Name    string `yaml:"dbname"`
 	SSLMode string `yaml:"sslmode"`
+}
+
+type Proposal struct {
+	NumberRecords int `yaml:"number_records"` // Количество записей в ответе
+	TimeRequest   int `yaml:"time_request"`   // Время между запросами
 }
 
 // LoadConfig загружает конфигурацию из YAML файла
@@ -40,7 +46,7 @@ func LoadConfig(path string) *Config {
 	return &cfg
 }
 
-// LoadEnv загружает .env файл в окружение. Строки .env файла
+// LoadEnv загружает .env файл в окружение. Строки .env файла:
 // DB_USER - Имя пользователя
 // DB_PASSWORD - Пароль
 func LoadEnv(path string) {

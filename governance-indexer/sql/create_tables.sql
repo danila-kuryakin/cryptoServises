@@ -1,14 +1,14 @@
 CREATE TABLE proposal (
     id serial primary key,
-    hex_id varchar(300) unique not null ,
+    hex_id varchar(256) unique not null ,
+    title text,
+    author varchar(256),
     created_at timestamp,
+    start_at timestamp,
+    end_at timestamp,
+    snapshot bigint,
     state text,
-    space_id serial,
-    Author varchar(300)
-);
-
-CREATE TABLE space (
-    id serial primary key,
-    hex_id varchar(300),
-    name varchar(300)
+    choices json,
+    space_id varchar(256),
+    space_name varchar(256)
 );

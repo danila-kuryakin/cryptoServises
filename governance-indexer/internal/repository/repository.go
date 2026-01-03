@@ -7,8 +7,6 @@ import (
 
 type ProposalRepo interface {
 	AddProposal(proposals []models.Proposals) error
-	//GetDiff(proposals []models.Proposals) ([]models.Proposals, error)
-	//GetHexId() ([]ProposalsHexId, error)
 }
 
 type Repository struct {

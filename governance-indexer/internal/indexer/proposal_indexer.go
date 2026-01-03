@@ -9,7 +9,6 @@ import (
 	"io"
 	"log"
 	"net/http"
-	"time"
 )
 
 type ProposalIndexer struct {
@@ -23,22 +22,30 @@ func NewProposalIndexer(repo *repository.Repository) *ProposalIndexer {
 var endpoint = "https://hub.snapshot.org/graphql"
 
 // GraphQL-запрос
-var createdQuery = `
+var queryProposals = `
 {
-  proposals(first: 5, orderBy: "created", orderDirection: desc) {
-    id
-    title
-    author
-    created
-    state
-    space {
-      id
-      name
-    }
-  }
+	proposals (
+		first: %d,
+		skip: 0,
+		orderDirection: desc
+	) {
+		id
+		title
+		author
+		created
+		start
+		end
+		state
+		snapshot
+		choices
+		space {
+			id
+			name
+		}
+	}
 }`
 
-// Структуры для парсинга ответа
+// CreatedResponse и DataResponse Структуры для парсинга ответа
 type CreatedResponse struct {
 	Data DataResponse `json:"data"`
 }
@@ -47,16 +54,18 @@ type DataResponse struct {
 	Proposals []models.Proposals `json:"proposals"`
 }
 
-func (proposalIndexer *ProposalIndexer) CreateProposal() error {
+// IndexProposal получает записи proposal и сохраняет в БД
+func (proposalIndexer *ProposalIndexer) IndexProposal(numberRecords int) error {
+
+	query := fmt.Sprintf(queryProposals, numberRecords)
+
 	jsonData, err := json.Marshal(map[string]string{
-		"query": createdQuery,
+		"query": query,
 	})
 	if err != nil {
 		log.Println("JSON marshal error:", err)
 		return err
 	}
-
-	start := time.Now()
 
 	resp, err := http.Post(endpoint, "application/json", bytes.NewBuffer(jsonData))
 	if err != nil {
@@ -77,13 +86,10 @@ func (proposalIndexer *ProposalIndexer) CreateProposal() error {
 		return err
 	}
 
-	elapsed := time.Since(start)
-
 	if err := proposalIndexer.repo.AddProposal(result.Data.Proposals); err != nil {
+		log.Println("Repository error:", err)
 		return err
 	}
 
-	fmt.Printf("\n⏱ Запрос выполнен за: %s\n", elapsed)
-	fmt.Println("Последние 5 proposals Snapshot:")
 	return nil
 }

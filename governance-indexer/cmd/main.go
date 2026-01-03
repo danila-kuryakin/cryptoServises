@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"governance-indexer/internal/repository"
 	"governance-indexer/internal/timer"
 	"log"
@@ -19,8 +20,9 @@ func main() {
 	config.LoadEnv(".env")
 	cfg := config.LoadConfig("configs/config.yml")
 
+	// Конфигурация и подключение к PostgreSQL
 	postgresConf := repository.PostgresConfig{
-		UserName: os.Getenv("DB_USER"),
+		Username: os.Getenv("DB_USER"),
 		Password: os.Getenv("DB_PASSWORD"),
 		Host:     cfg.Database.Host,
 		Port:     strconv.Itoa(cfg.Database.Port),
@@ -32,11 +34,14 @@ func main() {
 		log.Fatal(err)
 	}
 
+	// Подключения модулей
 	repo := repository.NewRepository(db)
 	index := indexer.NewIndexer(repo)
-	tm := timer.NewTimer(index)
+	tm := timer.NewTimer(index, cfg)
 	go tm.StartProposal()
 
-	log.Println("Server started on :8080")
-	http.ListenAndServe(":8080", nil)
+	log.Println(fmt.Sprintf("Server started on: %s", cfg.Server.Port))
+	if err := http.ListenAndServe(fmt.Sprintf(":%s", cfg.Server.Port), nil); err != nil {
+		return
+	}
 }

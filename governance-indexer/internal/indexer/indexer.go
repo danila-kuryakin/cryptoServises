@@ -5,7 +5,7 @@ import (
 )
 
 type ProposalIndexerInterface interface {
-	CreateProposal() error
+	IndexProposal(numberRecords int) error
 }
 
 type Indexer struct {
