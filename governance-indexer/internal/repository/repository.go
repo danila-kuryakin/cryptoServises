@@ -7,6 +7,7 @@ import (
 
 type ProposalRepo interface {
 	AddProposal(proposals []models.Proposals) error
+	FindMissing(proposals []models.Proposals) ([]models.Proposals, error)
 }
 
 type Repository struct {

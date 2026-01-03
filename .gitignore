@@ -8,6 +8,9 @@
 *.so
 *.dylib
 
+# тестовые запросы к БД
+*.test.sql
+
 # Test binary, built with `go test -c`
 *.test
 

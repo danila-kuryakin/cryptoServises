@@ -55,10 +55,12 @@ type DataResponse struct {
 }
 
 // IndexProposal получает записи proposal и сохраняет в БД
-func (proposalIndexer *ProposalIndexer) IndexProposal(numberRecords int) error {
+func (p *ProposalIndexer) IndexProposal(numberRecords int) error {
 
+	// Дописываем запрос. Добавляем количество получаемых записей
 	query := fmt.Sprintf(queryProposals, numberRecords)
 
+	// Переводим в json формат
 	jsonData, err := json.Marshal(map[string]string{
 		"query": query,
 	})
@@ -66,7 +68,7 @@ func (proposalIndexer *ProposalIndexer) IndexProposal(numberRecords int) error {
 		log.Println("JSON marshal error:", err)
 		return err
 	}
-
+	// Отправляем запрос и получаем ответ
 	resp, err := http.Post(endpoint, "application/json", bytes.NewBuffer(jsonData))
 	if err != nil {
 		log.Println("HTTP request error:", err)
@@ -80,15 +82,30 @@ func (proposalIndexer *ProposalIndexer) IndexProposal(numberRecords int) error {
 		return err
 	}
 
+	// парсим в json
 	var result CreatedResponse
 	if err := json.Unmarshal(body, &result); err != nil {
 		log.Println("JSON unmarshal error:", err)
 		return err
 	}
 
-	if err := proposalIndexer.repo.AddProposal(result.Data.Proposals); err != nil {
-		log.Println("Repository error:", err)
+	// смотрим каких записей нет
+	missing, err := p.repo.FindMissing(result.Data.Proposals)
+	if err != nil {
+		fmt.Println("Error finding missing proposals:", err)
 		return err
+	}
+	//for _, proposal := range missing {
+	//	fmt.Println(proposal)
+	//}
+	// TODO: здесь должен быть outbox-паттерн
+
+	// если есть записи, то сохраняем в БД
+	if len(missing) > 0 {
+		if err := p.repo.AddProposal(result.Data.Proposals); err != nil {
+			log.Println("Repository error:", err)
+			return err
+		}
 	}
 
 	return nil

@@ -40,6 +40,7 @@ func main() {
 	tm := timer.NewTimer(index, cfg)
 	go tm.StartProposal()
 
+	// Создаем http сервер
 	log.Println(fmt.Sprintf("Server started on: %s", cfg.Server.Port))
 	if err := http.ListenAndServe(fmt.Sprintf(":%s", cfg.Server.Port), nil); err != nil {
 		return
