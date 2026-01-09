@@ -73,6 +73,7 @@ func (p *ProposalIndexer) IndexProposal(numberRecords int) error {
 		return err
 	}
 
+	//log.Println("1")
 	// Отправляем запрос и получаем ответ
 	resp, err := http.Post(endpoint, "application/json", bytes.NewBuffer(jsonData))
 	if err != nil {
@@ -81,12 +82,14 @@ func (p *ProposalIndexer) IndexProposal(numberRecords int) error {
 	}
 	defer resp.Body.Close()
 
+	//log.Println("2")
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		log.Println("Read body error:", err)
 		return err
 	}
 
+	//log.Println("3")
 	// парсим в json
 	var result CreatedResponse
 	if err := json.Unmarshal(body, &result); err != nil {
@@ -94,6 +97,7 @@ func (p *ProposalIndexer) IndexProposal(numberRecords int) error {
 		return err
 	}
 
+	//log.Println("4")
 	// смотрим каких записей нет
 	missing, err := p.repo.FindMissing(result.Data.Proposals)
 	if err != nil {
@@ -101,6 +105,7 @@ func (p *ProposalIndexer) IndexProposal(numberRecords int) error {
 		return err
 	}
 
+	//log.Println("5")
 	if len(missing) == 0 {
 		log.Println("No missing proposals found")
 		return nil
@@ -130,5 +135,6 @@ func (p *ProposalIndexer) IndexProposal(numberRecords int) error {
 		}
 	}
 
+	//log.Println("6")
 	return nil
 }

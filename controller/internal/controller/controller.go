@@ -2,8 +2,6 @@ package controller
 
 import (
 	"controller/internal/service"
-	"controller/pkg/models"
-	"encoding/json"
 	"log"
 )
 
@@ -18,7 +16,6 @@ func NewController(service *service.Service) *Controller {
 }
 
 func (c *Controller) InitListener() {
-	i := 1
 	for {
 		m, err := c.service.ReaderWriterKafka.ReadMessage()
 		if err != nil {
@@ -26,13 +23,9 @@ func (c *Controller) InitListener() {
 		}
 		log.Println(m)
 
-		var proposals_in []models.Proposals
-		if err := json.Unmarshal(m.Value, &proposals_in); err != nil {
-			log.Println("bad json:", err)
-			continue
+		err = c.service.Processing(m)
+		if err != nil {
+			log.Println(err)
 		}
-
-		log.Printf("  %d) received order: %#v\n", i, proposals_in)
-		i++
 	}
 }

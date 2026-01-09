@@ -9,6 +9,7 @@ import (
 )
 
 type Dao interface {
+	Processing(message *kafka.Message) error
 }
 
 type ReaderWriterKafka interface {

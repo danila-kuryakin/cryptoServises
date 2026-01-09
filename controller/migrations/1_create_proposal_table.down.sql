@@ -1,1 +1,1 @@
-DROP TABLE IF EXISTS proposal;
+DROP TABLE IF EXISTS proposals;

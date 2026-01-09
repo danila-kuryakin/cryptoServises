@@ -1,4 +1,4 @@
-CREATE TABLE proposal (
+CREATE TABLE proposals (
     id serial primary key,
     hex_id varchar(256) unique not null ,
     title text,
@@ -15,7 +15,7 @@ CREATE TABLE proposal (
 
 CREATE TABLE event_outbox (
     id serial primary key,
-    hex_id varchar(256) references proposal(hex_id) on delete cascade,
+    hex_id varchar(256) unique not null references proposals(hex_id) on delete cascade,
     event_type text,
     created_at timestamp,
     processed_at timestamp NULL

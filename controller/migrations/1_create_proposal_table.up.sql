@@ -1,4 +1,4 @@
-CREATE TABLE proposal (
+CREATE TABLE proposals (
     id serial primary key,
     hex_id varchar(256) unique not null ,
     title text,

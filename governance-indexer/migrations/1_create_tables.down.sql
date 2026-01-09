@@ -1,2 +1,2 @@
-DROP TABLE IF EXISTS proposal;
 DROP TABLE IF EXISTS event_outbox;
+DROP TABLE IF EXISTS proposals;

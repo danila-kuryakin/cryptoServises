@@ -1,10 +1,13 @@
 package repository
 
 import (
+	"controller/pkg/models"
 	"database/sql"
 )
 
 type ProposalRepo interface {
+	ReadNewProposals() ([]models.Proposals, error)
+	DeliverySuccessful(proposals []models.Proposals) error
 }
 
 type Repository struct {
