@@ -9,7 +9,8 @@ import (
 )
 
 type Dao interface {
-	Processing(message *kafka.Message) error
+	Processing() error
+	MessageController() error
 }
 
 type ReaderWriterKafka interface {
@@ -19,12 +20,13 @@ type ReaderWriterKafka interface {
 
 type Service struct {
 	Dao
-	ReaderWriterKafka
 }
 
 func NewService(repo *repository.Repository, cfg *config.Config) *Service {
+	indexerKafka := service.NewReaderWriterService(cfg.Kafka.Address, cfg.Kafka.Port, config.DaoIndexerTopic, config.DaoIndexerGroup)
+	botKafka := service.NewReaderWriterService(cfg.Kafka.Address, cfg.Kafka.Port, config.DaoControllerBotTopic, config.DaoControllerBotGroup)
+
 	return &Service{
-		Dao:               NewDaoService(repo),
-		ReaderWriterKafka: service.NewReaderWriterService(cfg.Kafka.Address, cfg.Kafka.Port, config.DaoIndexerTopic, config.DaoIndexerGroup),
+		Dao: NewDaoService(repo, indexerKafka, botKafka),
 	}
 }

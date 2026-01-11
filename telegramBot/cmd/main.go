@@ -28,12 +28,12 @@ func main() {
 	}
 	db, err := repository.NewPostgresDB(postgresConf)
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 	}
 
 	// Подключения модулей
 	repo := repository.NewRepository(db)
-	services := service.NewService(repo)
+	services := service.NewService(repo, cfg)
 	bots := bot.NewBot(services, cfg)
 	go bots.StartBot()
 

@@ -41,12 +41,12 @@ type KafkaConfig struct {
 func LoadConfig(path string) *Config {
 	file, err := os.ReadFile(path)
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 	}
 
 	var cfg Config
 	if err := yaml.Unmarshal(file, &cfg); err != nil {
-		log.Fatal(err)
+		log.Println(err)
 	}
 
 	return &cfg
@@ -58,7 +58,7 @@ func LoadConfig(path string) *Config {
 func LoadEnv(path string) {
 	file, err := os.Open(path)
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 	}
 	defer file.Close()
 

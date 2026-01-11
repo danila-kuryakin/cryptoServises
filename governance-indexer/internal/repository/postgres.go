@@ -49,12 +49,6 @@ func RunMigrations(dsn string) error {
 		return err
 	}
 
-	// TODO: Нужно удалить. Используется для отладки
-	//if err := m.Down(); err != nil && err != migrate.ErrNoChange {
-	//	log.Println(err)
-	//	return err
-	//}
-
 	if err := m.Up(); err != nil && err != migrate.ErrNoChange {
 		log.Println(err)
 		return err

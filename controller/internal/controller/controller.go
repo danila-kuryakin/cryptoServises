@@ -3,6 +3,7 @@ package controller
 import (
 	"controller/internal/service"
 	"log"
+	"time"
 )
 
 type Controller struct {
@@ -17,15 +18,18 @@ func NewController(service *service.Service) *Controller {
 
 func (c *Controller) InitListener() {
 	for {
-		m, err := c.service.ReaderWriterKafka.ReadMessage()
-		if err != nil {
+		if err := c.service.Processing(); err != nil {
 			log.Println(err)
 		}
-		log.Println(m)
+	}
+}
 
-		err = c.service.Processing(m)
-		if err != nil {
-			log.Println(err)
+func (c *Controller) InitMessageController() {
+	for {
+		if err := c.service.MessageController(); err != nil {
+			return
 		}
+
+		time.Sleep(1 * time.Second)
 	}
 }

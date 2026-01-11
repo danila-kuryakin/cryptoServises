@@ -13,6 +13,7 @@ import (
 type Config struct {
 	Server   ServerConfig   `yaml:"server"`
 	Database DatabaseConfig `yaml:"database"`
+	Kafka    KafkaConfig    `yaml:"kafka"`
 }
 
 type ServerConfig struct {
@@ -25,16 +26,21 @@ type DatabaseConfig struct {
 	SSLMode string `yaml:"sslmode"`
 }
 
+type KafkaConfig struct {
+	Address string `yaml:"address"`
+	Port    string `yaml:"port"`
+}
+
 // LoadConfig загружает конфигурацию из YAML файла
 func LoadConfig(path string) *Config {
 	file, err := os.ReadFile(path)
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 	}
 
 	var cfg Config
 	if err := yaml.Unmarshal(file, &cfg); err != nil {
-		log.Fatal(err)
+		log.Println(err)
 	}
 
 	return &cfg
@@ -47,9 +53,14 @@ func LoadConfig(path string) *Config {
 func LoadEnv(path string) {
 	file, err := os.Open(path)
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 	}
-	defer file.Close()
+	defer func(file *os.File) {
+		err := file.Close()
+		if err != nil {
+			log.Println("Error closing file", err)
+		}
+	}(file)
 
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
@@ -68,6 +79,10 @@ func LoadEnv(path string) {
 		key := strings.TrimSpace(parts[0])
 		value := strings.TrimSpace(parts[1])
 
-		os.Setenv(key, value)
+		err := os.Setenv(key, value)
+		if err != nil {
+			log.Println("Error setting env var", err)
+			return
+		}
 	}
 }

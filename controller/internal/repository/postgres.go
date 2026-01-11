@@ -12,8 +12,10 @@ import (
 )
 
 const (
-	proposalsTable   = "proposals"
-	eventOutboxTable = "event_outbox"
+	proposalsTable      = "proposals"
+	eventOutboxTable    = "event_outbox"
+	eventSchedulerTable = "event_scheduler"
+	userTable           = "users"
 )
 
 type PostgresConfig struct {

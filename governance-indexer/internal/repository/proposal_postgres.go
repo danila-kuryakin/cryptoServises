@@ -54,9 +54,9 @@ func (p ProposalPostgres) AddProposal(proposals []models.Proposals) error {
 			proposal.ID,
 			proposal.Title,
 			proposal.Author,
-			time.Unix(proposal.Created, 0),
-			time.Unix(proposal.Start, 0),
-			time.Unix(proposal.End, 0),
+			time.Unix(proposal.Created, 0).UTC(),
+			time.Unix(proposal.Start, 0).UTC(),
+			time.Unix(proposal.End, 0).UTC(),
 			proposal.Snapshot,
 			proposal.State,
 			string(choicesJSON),
@@ -128,108 +128,3 @@ func (p ProposalPostgres) FindMissing(proposals []models.Proposals) ([]models.Pr
 
 	return missing, nil
 }
-
-//// AddProposal Добавляет новые proposals в БД
-//func (p ProposalPostgres) AddProposal(proposals []models.Proposals) error {
-//	if len(proposals) == 0 {
-//		log.Println("AddProposal called with no proposals")
-//		return nil
-//	}
-//
-//	log.Println("11")
-//	placeholders := make([]string, 0, len(proposals))
-//	args := make([]interface{}, 0, len(proposals)*9)
-//
-//	placeholdersOutbox := make([]string, 0, len(proposals))
-//	argsOutbox := make([]interface{}, 0, len(proposals)*3)
-//
-//	iProposals := 1
-//	iOutbox := 1
-//	for _, t := range proposals {
-//		placeholders = append(placeholders, fmt.Sprintf(""+
-//			"($%d, $%d, $%d, $%d, $%d, $%d, $%d, $%d, $%d, $%d, $%d)",
-//			iProposals, iProposals+1, iProposals+2, iProposals+3, iProposals+4,
-//			iProposals+5, iProposals+6, iProposals+7, iProposals+8,
-//			iProposals+9, iProposals+10))
-//
-//		// choices нужно сериализовать в JSON
-//		choicesJSON, err := json.Marshal(t.Choices)
-//		if err != nil {
-//			log.Println("AddProposal err:", err)
-//			return err
-//		}
-//
-//		args = append(
-//			args,
-//			t.ID,
-//			t.Title,
-//			t.Author,
-//			time.Unix(t.Created, 0),
-//			time.Unix(t.Start, 0),
-//			time.Unix(t.End, 0),
-//			t.Snapshot,
-//			t.State,
-//			string(choicesJSON),
-//			t.Space.ID,
-//			t.Space.Name)
-//		iProposals += 11
-//
-//		placeholdersOutbox = append(placeholdersOutbox, fmt.Sprintf(""+
-//			"($%d, $%d, now())",
-//			iOutbox, iOutbox+1))
-//
-//		argsOutbox = append(
-//			argsOutbox,
-//			t.ID,
-//			"ProposalCreated",
-//		)
-//		iOutbox += 2
-//	}
-//	log.Println("22")
-//	query := fmt.Sprintf(`
-//      INSERT INTO %s (hex_id, title, author, created_at, start_at, end_at, snapshot, state, choices, space_id, space_name)
-//      VALUES %s ON CONFLICT (hex_id) DO NOTHING
-//  `, proposalsTable, strings.Join(placeholders, ", "))
-//
-//	queryOutbox := fmt.Sprintf(`
-//      INSERT INTO %s (hex_id, event_type, created_at)
-//      VALUES %s ON CONFLICT (hex_id) DO NOTHING
-//  `, eventOutboxTable, strings.Join(placeholdersOutbox, ", "))
-//	log.Println("33")
-//	tx, err := p.db.Begin()
-//	if err != nil {
-//		log.Println("Error in proposalPostgres.AddProposal:", err)
-//		return err
-//	}
-//
-//	fmt.Println(query)
-//	fmt.Println(args)
-//	fmt.Println(queryOutbox)
-//	fmt.Println(argsOutbox)
-//
-//	log.Println("44")
-//	_, err = tx.Exec(query, args...)
-//	if err != nil {
-//		log.Println("Error to exec proposal :", err)
-//		err := tx.Rollback()
-//		if err != nil {
-//			log.Println("Error to Rollback proposal :", err)
-//			return err
-//		}
-//		return err
-//	}
-//
-//	log.Println("55")
-//	_, err = tx.Exec(queryOutbox, argsOutbox...)
-//	if err != nil {
-//		log.Println("Error to exec outbox :", err)
-//		err := tx.Rollback()
-//		if err != nil {
-//			log.Println("Error to Rollback outbox :", err)
-//			return err
-//		}
-//		return err
-//	}
-//	log.Println("66")
-//	return nil
-//}

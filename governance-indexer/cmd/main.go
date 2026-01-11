@@ -10,10 +10,9 @@ import (
 	"os"
 	"strconv"
 
-	_ "github.com/lib/pq"
-	"github.com/segmentio/kafka-go"
-
 	"governance-indexer/internal/config"
+
+	_ "github.com/lib/pq"
 )
 
 func main() {
@@ -32,20 +31,8 @@ func main() {
 	}
 	db, err := repository.NewPostgresDB(postgresConf)
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 	}
-
-	kafkaWriter := &kafka.Writer{
-		Addr:     kafka.TCP(fmt.Sprintf("localhost:%s", cfg.Kafka.Port)),
-		Topic:    "dao-indexer",
-		Balancer: &kafka.LeastBytes{},
-	}
-	defer func(kafkaWriter *kafka.Writer) {
-		err := kafkaWriter.Close()
-		if err != nil {
-			log.Fatal(err)
-		}
-	}(kafkaWriter)
 
 	// Подключения модулей
 	repo := repository.NewRepository(db)

@@ -11,6 +11,10 @@ import (
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 )
 
+const (
+	usersTable = "users"
+)
+
 type PostgresConfig struct {
 	Username string
 	Password string
@@ -37,6 +41,10 @@ func RunMigrations(dsn string) error {
 	if err != nil {
 		return err
 	}
+
+	//if err := m.Down(); err != nil && err != migrate.ErrNoChange {
+	//	return err
+	//}
 
 	if err := m.Up(); err != nil && err != migrate.ErrNoChange {
 		return err

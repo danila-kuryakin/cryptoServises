@@ -8,7 +8,7 @@ database:
   sslmode: disable
 
 proposal:
-  number_records: 50
+  number_records: 5
   time_request: 10 # секунды
 
 kafka:

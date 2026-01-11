@@ -12,7 +12,6 @@ import (
 	"strconv"
 
 	_ "github.com/lib/pq"
-	"github.com/segmentio/kafka-go"
 )
 
 func main() {
@@ -31,29 +30,16 @@ func main() {
 	}
 	db, err := repository.NewPostgresDB(postgresConf)
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 	}
 	log.Println(fmt.Sprintf("Kafka server: localhost:%s", cfg.Kafka.Port))
-
-	kafkaReader := kafka.NewReader(kafka.ReaderConfig{
-		Brokers: []string{fmt.Sprintf("localhost:%s", cfg.Kafka.Port)},
-		Topic:   "dao-indexer",
-		GroupID: "dao-indexer",
-		// читать с конца, если группа новая
-		StartOffset: kafka.LastOffset,
-	})
-	defer func(kafkaReader *kafka.Reader) {
-		err := kafkaReader.Close()
-		if err != nil {
-			log.Fatal(err)
-		}
-	}(kafkaReader)
 
 	// Подключения модулей
 	repo := repository.NewRepository(db)
 	services := service.NewService(repo, cfg)
 	h := controller.NewController(services)
 	go h.InitListener()
+	go h.InitMessageController()
 
 	// Создаем http сервер
 	log.Println(fmt.Sprintf("Server started on: %s", cfg.Server.Port))
