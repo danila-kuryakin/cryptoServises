@@ -10,7 +10,11 @@ import (
 
 type Dao interface {
 	Processing() error
-	MessageController() error
+	CompareIDs(a, b []string) (same, onlyA, onlyB []string)
+	ProcessingProposals(ids []string) error
+	ProcessingSpaces(ids []string) error
+	MessageControllerProposal() error
+	MessageControllerSpace() error
 }
 
 type ReaderWriterKafka interface {

@@ -10,10 +10,15 @@ type NewData struct {
 }
 
 type ProposalEvent struct {
-	ID      string       `db:"hex_id"`  // Уникальный идентификатор пропозиции
-	Created sql.NullTime `db:"created"` // Время создания записи
-	Start   sql.NullTime `db:"start"`   // Время начала голосования
-	End     sql.NullTime `db:"end"`     // Время окончание голосования
+	ID      string `db:"hex_id"`  // Уникальный идентификатор пропозиции
+	Created int64  `db:"created"` // Время создания записи
+	Start   int64  `db:"start"`   // Время начала голосования
+	End     int64  `db:"end"`     // Время окончание голосования
+}
+
+type SpaceEvent struct {
+	ID      string       `db:"space_id"` // Уникальный идентификатор пропозиции
+	Created sql.NullTime `db:"created"`  // Время создания записи
 }
 
 type CurrentEvent struct {
@@ -26,6 +31,11 @@ type CurrentEvent struct {
 }
 
 type CurrentProposalEvent struct {
+	Users        []int64      `json:"user_id"`
+	CurrentEvent CurrentEvent `json:"current_event"`
+}
+
+type CurrentSpaceEvent struct {
 	Users        []int64      `json:"user_id"`
 	CurrentEvent CurrentEvent `json:"current_event"`
 }

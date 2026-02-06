@@ -11,10 +11,6 @@ import (
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 )
 
-const (
-	usersTable = "users"
-)
-
 type PostgresConfig struct {
 	Username string
 	Password string

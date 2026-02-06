@@ -40,9 +40,9 @@ func main() {
 	tm := timer.NewTimer(index, cfg)
 
 	// TODO: вместо это ерунды должен быть один поток очереди с ограничением количества запросов 60 в секунду
-	//go tm.StartProposal()
+	go tm.StartProposal()
 	//go tm.StartSpace(false)
-	go tm.StartVotes()
+	//go tm.StartVotes()
 
 	// Создаем http сервер
 	log.Println(fmt.Sprintf("Server started on: %s", cfg.Server.Port))

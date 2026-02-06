@@ -128,16 +128,16 @@ func (d *DAOIndexer) MainIndex(numberRecords int, typeQuery string) error {
 			log.Println("Spaces indexer")
 			query = fmt.Sprintf(querySpaces, numberRecords)
 		}
-	case "votes":
-		{
-			// FIXME:Тесть. Пока не понимаю как это подключить. Нужно Proposals для работы
-			log.Println("Votes indexer")
-			err := d.RequestVotes(1000, "QmPvbwguLfcVryzBRrbY4Pb9bCtxURagdv1XjhtFLf3wHj")
-			if err != nil {
-				return err
-			}
-			return nil
-		}
+	//case "votes":
+	//	{
+	//		// FIXME:Тесть. Пока не понимаю как это подключить. Нужно Proposals для работы
+	//		log.Println("Votes indexer")
+	//		err := d.RequestVotes(1000, "QmPvbwguLfcVryzBRrbY4Pb9bCtxURagdv1XjhtFLf3wHj")
+	//		if err != nil {
+	//			return err
+	//		}
+	//		return nil
+	//	}
 	case "getAllSpaces":
 		{
 			log.Println("getAllSpaces indexer")
@@ -328,8 +328,6 @@ func (d *DAOIndexer) RequestVotes(batchSize int, proposals string) error {
 
 // IndexProposal получает записи proposal и сохраняет в БД
 func (d *DAOIndexer) Request(graphQuery string) error {
-
-	log.Println("Request graph query:", graphQuery)
 	// Переводим в json формат
 	jsonData, err := json.Marshal(map[string]string{
 		"query": graphQuery,
@@ -365,21 +363,16 @@ func (d *DAOIndexer) Request(graphQuery string) error {
 		log.Println("JSON unmarshal customErrors:", err)
 		return err
 	}
-
-	//fmt.Println("response.Data", string(response.Data))
-
 	// если это Proposals
-	var proposals ProposalsResponse
-	if err := json.Unmarshal(response.Data, &proposals); err == nil {
+	var proposalResponse ProposalsResponse
+	if err := json.Unmarshal(response.Data, &proposalResponse); err == nil {
 		// смотрим каких записей нет
 		log.Println("Start Proposals")
-		err := d.ProposalsProcessing(proposals.Proposals)
+		err := d.ProposalsProcessing(proposalResponse.Proposals)
 		if err != nil {
 			return err
 		}
 	}
-
-	//fmt.Println(response)
 
 	// если это Proposals
 	var spaceResponse SpaceResponse
@@ -431,8 +424,6 @@ func (d *DAOIndexer) ProposalsProcessing(proposals []models.Proposals) error {
 	if err != nil {
 		log.Println(fmt.Sprintf("Write messages customErrors: %v", err))
 	}
-
-	log.Println("Proposals write:", len(missing))
 
 	// если есть записи, то сохраняем в БД
 	if len(missing) > 0 {

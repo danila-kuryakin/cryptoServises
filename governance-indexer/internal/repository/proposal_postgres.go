@@ -2,11 +2,11 @@ package repository
 
 import (
 	"controller/pkg/models"
+	controllerRepository "controller/pkg/repository"
 	"database/sql"
 	"encoding/json"
 	"fmt"
 	"log"
-	"time"
 
 	"github.com/lib/pq"
 )
@@ -43,20 +43,20 @@ func (p ProposalPostgres) AddProposal(proposals []models.Proposals) error {
 				INSERT INTO %s (hex_id, title, author, created_at, start_at, end_at, 
 				                snapshot, state, choices, space_id, space_name)
 				VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) ON CONFLICT (hex_id) DO NOTHING
-			`, proposalsTable)
+			`, controllerRepository.ProposalsTable)
 
 		queryOutbox := fmt.Sprintf(`
 				INSERT INTO %s (hex_id, event_type, created_at)
 				VALUES ($1, $2, now()) ON CONFLICT (hex_id) DO NOTHING
-			`, eventOutboxTable)
+			`, controllerRepository.ProposalsOutboxTable)
 
 		_, err = tx.Exec(query,
 			proposal.ID,
 			proposal.Title,
 			proposal.Author,
-			time.Unix(proposal.Created, 0).UTC(),
-			time.Unix(proposal.Start, 0).UTC(),
-			time.Unix(proposal.End, 0).UTC(),
+			proposal.Created, //time.Unix(proposal.Created, 0).UTC(),
+			proposal.Start,   //time.Unix(proposal.Start, 0).UTC(),
+			proposal.End,     //time.Unix(proposal.End, 0).UTC(),
 			proposal.Snapshot,
 			proposal.State,
 			string(choicesJSON),
@@ -74,7 +74,7 @@ func (p ProposalPostgres) AddProposal(proposals []models.Proposals) error {
 
 		_, err = tx.Exec(queryOutbox,
 			proposal.ID,
-			eventProposalCreated,
+			controllerRepository.EventProposalCreated,
 		)
 		if err != nil {
 			log.Println("Error to exec outbox :", err)
@@ -103,7 +103,7 @@ func (p ProposalPostgres) FindMissing(proposals []models.Proposals) ([]models.Pr
         SELECT unnest($1::text[]) AS hex_id
         EXCEPT
         SELECT hex_id FROM %s;
-    `, proposalsTable)
+    `, controllerRepository.ProposalsTable)
 	// база говорит, каких ID у неё нет
 	rows, err := p.db.Query(query, pq.Array(ids))
 	if err != nil {

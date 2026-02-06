@@ -26,7 +26,10 @@ func (c *Controller) InitListener() {
 
 func (c *Controller) InitMessageController() {
 	for {
-		if err := c.service.MessageController(); err != nil {
+		//if err := c.service.MessageControllerProposal(); err != nil {
+		//	return
+		//}
+		if err := c.service.MessageControllerSpace(); err != nil {
 			return
 		}
 

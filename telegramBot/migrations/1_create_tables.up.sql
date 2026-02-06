@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS proposals
     space_name varchar(256)
 );
 
-CREATE TABLE IF NOT EXISTS event_outbox
+CREATE TABLE IF NOT EXISTS proposals_outbox
 (
     id serial primary key,
     hex_id varchar(256) unique not null references proposals(hex_id) on delete cascade,
@@ -36,6 +36,13 @@ CREATE TABLE IF NOT EXISTS users
 (
     id serial primary key,
     user_id bigint unique not null,
-    username text,
-    dao_subscribed integer
+    proposals_subscribed integer,
+    spaces_subscribed integer
+);
+
+CREATE TABLE IF NOT EXISTS users_votes
+(
+    id serial primary key,
+    user_id bigint not null references users(user_id) on delete cascade,
+    votes_id text not null
 );

@@ -8,9 +8,17 @@ import (
 )
 
 type Dao interface {
-	NewUser(userId int64, username string) error
-	Subscribed(userId int64) (bool, error)
-	Unsubscribed(userId int64) (bool, error)
+	NewUser(userId int64) error
+	SubscribedSpaces(userId int64) (bool, error)
+	UnsubscribedSpaces(userId int64) (bool, error)
+	SubscribedProposals(userId int64) (bool, error)
+	UnsubscribedProposals(userId int64) (bool, error)
+	StatusSubscribedSpaces(userId int64) (int, error)
+	StatusSubscribedProposals(userId int64) (int, error)
+	CreateVotesId(userId int64, votesId string) (bool, error)
+	DropVotesId(userId int64, votesId string) (bool, error)
+	GetVotesByUser(userId int64) ([]string, error)
+
 	KafkaListen() (models.CurrentProposalEvent, error)
 }
 

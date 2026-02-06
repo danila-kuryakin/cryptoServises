@@ -11,13 +11,6 @@ import (
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 )
 
-const (
-	proposalsTable      = "proposals"
-	eventOutboxTable    = "event_outbox"
-	eventSchedulerTable = "event_scheduler"
-	userTable           = "users"
-)
-
 type PostgresConfig struct {
 	Username string
 	Password string

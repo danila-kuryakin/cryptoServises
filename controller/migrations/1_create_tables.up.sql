@@ -4,9 +4,9 @@ CREATE TABLE IF NOT EXISTS proposals
     hex_id varchar(256) unique not null ,
     title text,
     author varchar(256),
-    created_at timestamp,
-    start_at timestamp,
-    end_at timestamp,
+    created_at integer,
+    start_at integer,
+    end_at integer,
     snapshot bigint,
     state text,
     choices json,
@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS proposals
     space_name varchar(256)
 );
 
-CREATE TABLE IF NOT EXISTS event_outbox
+CREATE TABLE IF NOT EXISTS proposals_outbox
 (
     id serial primary key,
     hex_id varchar(256) unique not null references proposals(hex_id) on delete cascade,

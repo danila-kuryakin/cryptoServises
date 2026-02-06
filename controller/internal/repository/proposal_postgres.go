@@ -3,6 +3,7 @@ package repository
 import (
 	customError "controller/errors"
 	"controller/pkg/models"
+	"controller/pkg/repository"
 	"database/sql"
 	"errors"
 	"fmt"
@@ -17,12 +18,12 @@ func NewProposalPostgres(db *sql.DB) *ProposalPostgres {
 	return &ProposalPostgres{db: db}
 }
 
-func (p *ProposalPostgres) ReadProposalsEvents() ([]models.ProposalEvent, error) {
+func (p *ProposalPostgres) ReadEvents() ([]models.ProposalEvent, error) {
 
 	query := fmt.Sprintf(`SELECT prop.hex_id, prop.created_at, prop.start_at, prop.end_at				       
 				FROM %s AS prop
 				LEFT JOIN %s AS evn ON prop.hex_id = evn.hex_id
-				WHERE evn.processed_at IS NULL`, proposalsTable, eventOutboxTable)
+				WHERE evn.processed_at IS NULL`, repository.ProposalsTable, repository.ProposalsOutboxTable)
 
 	rows, err := p.db.Query(query)
 	if err != nil {
@@ -37,7 +38,9 @@ func (p *ProposalPostgres) ReadProposalsEvents() ([]models.ProposalEvent, error)
 	}(rows)
 
 	var proposals []models.ProposalEvent
-
+	//time.Unix(proposal.Created, 0).UTC(),
+	//time.Unix(proposal.Start, 0).UTC(),
+	//time.Unix(proposal.End, 0).UTC(),
 	for rows.Next() {
 		var p models.ProposalEvent
 		if err := rows.Scan(&p.ID, &p.Created, &p.Start, &p.End); err != nil {
@@ -63,7 +66,7 @@ func (p *ProposalPostgres) ProposalDeliverySuccessful(proposals []models.Proposa
 				UPDATE %s
 				SET processed_at = NOW()
 				WHERE hex_id = $1;
-				`, eventOutboxTable)
+				`, repository.ProposalsOutboxTable)
 
 		_, err := tx.Exec(query, proposal.ID)
 		if err != nil {
@@ -76,9 +79,9 @@ func (p *ProposalPostgres) ProposalDeliverySuccessful(proposals []models.Proposa
 }
 
 const (
-	eventCreate = "create"
-	eventStart  = "start"
-	eventEnd    = "end"
+	eventCreateProposal = "create proposal"
+	eventStartProposal  = "start proposal"
+	eventEndProposal    = "end proposal"
 )
 
 func (p *ProposalPostgres) AddEventScheduler(proposals []models.ProposalEvent) error {
@@ -91,22 +94,22 @@ func (p *ProposalPostgres) AddEventScheduler(proposals []models.ProposalEvent) e
 		query := fmt.Sprintf(`
 				INSERT INTO %s (hex_id, event_type, event_at)
 				VALUES ($1, $2, $3)
-			`, eventSchedulerTable)
+			`, repository.EventSchedulerTable)
 
 		if proposal.Created.Valid {
-			if _, err := tx.Exec(query, proposal.ID, eventCreate, proposal.Created); err != nil {
+			if _, err := tx.Exec(query, proposal.ID, eventCreateProposal, proposal.Created); err != nil {
 				log.Println("Error in Exec Created:", err)
 				return tx.Rollback()
 			}
 		}
 		if proposal.Start.Valid {
-			if _, err := tx.Exec(query, proposal.ID, eventStart, proposal.Start); err != nil {
+			if _, err := tx.Exec(query, proposal.ID, eventStartProposal, proposal.Start); err != nil {
 				log.Println("Error in Exec Start:", err)
 				return tx.Rollback()
 			}
 		}
 		if proposal.End.Valid {
-			if _, err := tx.Exec(query, proposal.ID, eventEnd, proposal.End); err != nil {
+			if _, err := tx.Exec(query, proposal.ID, eventEndProposal, proposal.End); err != nil {
 				log.Println("Error in Exec End:", err)
 				return tx.Rollback()
 			}
@@ -124,7 +127,7 @@ func (p *ProposalPostgres) GetCurrentEvents(number int64) ([]models.CurrentEvent
 			WHERE evn.processed_at IS NULL
 			ORDER BY evn.event_at ASC
 			LIMIT $1
-		`, eventSchedulerTable, proposalsTable)
+		`, repository.EventSchedulerTable, repository.ProposalsTable)
 
 	rows, err := p.db.Query(query, number)
 	if err != nil {
@@ -168,7 +171,7 @@ func (p *ProposalPostgres) EventDeliverySuccessful(events []models.CurrentEvent)
 				UPDATE %s
 				SET processed_at = NOW()
 				WHERE hex_id = $1 AND event_type = $2;
-				`, eventSchedulerTable)
+				`, repository.EventSchedulerTable)
 
 		_, err := tx.Exec(query, event.ID, event.EventType)
 		if err != nil {

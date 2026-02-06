@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"controller/pkg/repository"
 	"database/sql"
 	"fmt"
 	"log"
@@ -17,7 +18,7 @@ func NewUserPostgres(db *sql.DB) *UserPostgres {
 func (u *UserPostgres) GetUserSubscriptions() ([]int64, error) {
 	query := fmt.Sprintf(`SELECT user_id			       
 				FROM %s 
-				WHERE dao_subscribed = 1`, userTable)
+				WHERE dao_subscribed = 1`, repository.UserTable)
 
 	rows, err := u.db.Query(query)
 	if err != nil {

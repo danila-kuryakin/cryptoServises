@@ -2,6 +2,7 @@ package repository
 
 import (
 	"controller/pkg/models"
+	controllerRepository "controller/pkg/repository"
 	"database/sql"
 	"encoding/json"
 	"fmt"
@@ -19,7 +20,7 @@ func NewSpacePostgres(db *sql.DB) *SpacePostgres {
 }
 
 func (s SpacePostgres) AddHistory(space []models.Space) error {
-	err := s.Add(space, eventHistory)
+	err := s.Add(space, controllerRepository.EventHistory)
 	if err != nil {
 		return err
 	}
@@ -27,7 +28,7 @@ func (s SpacePostgres) AddHistory(space []models.Space) error {
 }
 
 func (s SpacePostgres) AddNew(space []models.Space) error {
-	err := s.Add(space, eventHistory)
+	err := s.Add(space, controllerRepository.EventSpaceCreated)
 	if err != nil {
 		return err
 	}
@@ -37,18 +38,18 @@ func (s SpacePostgres) AddNew(space []models.Space) error {
 // AddProposal Добавляет новые proposals в БД
 func (s SpacePostgres) Add(space []models.Space, eventType string) error {
 	query := fmt.Sprintf(`
-				INSERT INTO %s (space_id, name, about, network, symbol, created,
+				INSERT INTO %s (space_id, name, about, network, symbol, created_at,
 								strategies_name, admins, members,
 								filters_min_score, filters_only_members)
 				VALUES ($1,$2,$3,$4,$5,$6,
 				        $7,$8,$9,
 				        $10,$11) ON CONFLICT (space_id) DO NOTHING
-				`, spacesTable)
+				`, controllerRepository.SpacesTable)
 
 	queryOutbox := fmt.Sprintf(`
 				INSERT INTO %s (space_id, event_type, created_at)
 				VALUES ($1, $2, now()) ON CONFLICT (space_id) DO NOTHING
-				`, spacesOutboxTable)
+				`, controllerRepository.SpacesOutboxTable)
 
 	if len(space) == 0 {
 		log.Println("AddProposal called with no space")
@@ -133,7 +134,7 @@ func (s SpacePostgres) FindMissing(spaces []models.Space) ([]models.Space, error
         SELECT unnest($1::text[]) AS space_id
         EXCEPT
         SELECT space_id FROM %s;
-    `, spacesTable)
+    `, controllerRepository.SpacesTable)
 	// база говорит, каких ID у неё нет
 	rows, err := s.db.Query(query, pq.Array(ids))
 	if err != nil {
